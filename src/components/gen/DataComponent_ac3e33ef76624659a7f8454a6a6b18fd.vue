@@ -1,0 +1,31 @@
+<script setup>
+import * as $rdf from 'rdflib'
+import IterativeContainer from '@/components/vo/IterativeContainer.vue'
+import Contributor from './Contributor.vue'
+// <custom-imports>
+// </custom-imports>
+
+
+const props = defineProps([
+    'graph',
+    'depth',
+    'object',
+    // <custom-props>
+    // </custom-props>
+])
+
+const predicate = $rdf.sym('https://w3id.org/dcso/ns/core#hasContributor')
+// <custom-code>
+// </custom-code>
+</script>
+<template>
+    <IterativeContainer
+        :graph="graph"
+        :depth="depth"
+        :object="object"
+        :predicate="predicate"
+        v-slot="slotProps"
+    >
+        <Contributor :graph="graph" :depth="depth" :object="slotProps.object" />
+    </IterativeContainer>
+</template>

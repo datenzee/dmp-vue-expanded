@@ -1,0 +1,49 @@
+<script setup>
+import * as $rdf from 'rdflib'
+import data from './data'
+import {reactive} from "@vue/reactivity";
+import axios from "axios";
+import Root from '@/components/gen/Root.vue'
+
+const state = reactive({
+    object: null,
+    graph: null,
+    loading: true,
+    error: null,
+})
+
+const url = new URL(window.location.href)
+
+const root = url.searchParams.get('root') || 'https://datenzee.ds-wizard.org/projects/9a710add-11b7-4544-a432-82727b45eca6#DMP_4f48219d-17e2-4d71-8fd6-6c42ad3af7bf'
+state.object = $rdf.sym(root)
+
+const createGraph = (turtle) => {
+    try {
+      const graph = new $rdf.IndexedFormula()
+      $rdf.parse(turtle, graph, state.object.uri, 'text/turtle')
+      state.graph = graph
+      state.loading = false
+    } catch (error) {
+      state.loading = false
+      state.error = error.toString()
+    }
+}
+
+const dataUrl = url.searchParams.get('data')
+if (dataUrl) {
+    axios
+        .get(dataUrl)
+        .then((result) => {
+            createGraph(result.data)
+        })
+} else {
+    createGraph(data)
+}
+</script>
+<template>
+    <main>
+        <div v-if="state.loading">Loading...</div>
+        <div v-else-if="state.error" class="text-danger">{{ state.error }}</div>
+        <Root v-else :graph="state.graph" :depth="0" :object="state.object"/>
+    </main>
+</template>
